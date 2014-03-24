@@ -22,6 +22,8 @@ import android.widget.TextView;
 
 public class gameActivity extends ActionBarActivity {
 
+    private int points;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,13 +40,16 @@ public class gameActivity extends ActionBarActivity {
         android.app.ActionBar actionBar = getActionBar();
         actionBar.hide();
 
-        final TextView textView = (TextView) findViewById(R.id.textView);
-
         // add a timer in the top right corner
-        new CountDownTimer(100000, 1000) {
+        final TextView textView = (TextView) findViewById(R.id.textView);
+        new CountDownTimer(60000, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 textView.setText(String.valueOf(millisUntilFinished / 1000));
+
+                if ((millisUntilFinished/1000) % 5 == 0) {
+                    addGoomba();
+                }
             }
 
             public void onFinish() {
@@ -52,7 +57,15 @@ public class gameActivity extends ActionBarActivity {
             }
         }.start();
 
-        addGoomba();
+        // start a new gamePlay
+        gamePlay game = new gamePlay();
+
+        // add number of point in the top left corner
+        points = game.getPoints();
+        final TextView textView2 = (TextView) findViewById(R.id.textView2);
+        textView2.setText(String.valueOf(points));
+
+        // addGoomba();
 
     }
 
@@ -107,7 +120,14 @@ public class gameActivity extends ActionBarActivity {
             public void onClick(View v) {
 
                 //when play is clicked show stop button and hide play button
-                goomba.setVisibility(View.GONE);
+                goomba.shot();
+
+                // update number of scored points
+                points += goomba.getValue();
+                final TextView textView2 = (TextView) findViewById(R.id.textView2);
+                textView2.setText(String.valueOf(points));
+
+                // points += goomba.getValue();
 
             }
         });

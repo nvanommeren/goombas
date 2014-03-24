@@ -14,7 +14,18 @@
         android:layout_alignParentTop="true"
         android:textStyle="bold"
         android:textColor="#ffff0023"
-        android:layout_marginLeft="3dp"
-        android:layout_marginTop="3dp" />
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView2"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        android:textColor="#ffff0023"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp" />
 
 </RelativeLayout>
