@@ -2,16 +2,23 @@ package com.android.goombas;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Context;
+import android.graphics.Point;
+import android.os.CountDownTimer;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 public class gameActivity extends ActionBarActivity {
 
@@ -31,9 +38,22 @@ public class gameActivity extends ActionBarActivity {
         android.app.ActionBar actionBar = getActionBar();
         actionBar.hide();
 
+        final TextView textView = (TextView) findViewById(R.id.textView);
+
+        // add a timer in the top right corner
+        new CountDownTimer(100000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                textView.setText(String.valueOf(millisUntilFinished / 1000));
+            }
+
+            public void onFinish() {
+                textView.setText("done!");
+            }
+        }.start();
+
         addGoomba();
 
-        startAnimation();
     }
 
 
@@ -79,35 +99,26 @@ public class gameActivity extends ActionBarActivity {
         final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
 
         // create a new goomba
-        final Goomba goomba = new Goomba(this, 0, true);
+        final Goomba goomba = new Goomba(this);
 
-        // hide button after it is clicked
+        // hide goomba after it is clicked
         goomba.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-            //when play is clicked show stop button and hide play button
-            goomba.setVisibility(View.GONE);
-;
+                //when play is clicked show stop button and hide play button
+                goomba.setVisibility(View.GONE);
+
             }
         });
-;
+
+        // add goomba to view
         relativeLayout.addView(goomba);
 
-    }
+        // pick a random y as starting height and start the animation
+        int randomY = goomba.pickY();
+        goomba.startAnimation(randomY);
 
-    public void startAnimation() {
-        float scale = getResources().getDisplayMetrics().density;
-        View someButton = findViewById(1);
-
-        ObjectAnimator anim1 = ObjectAnimator.ofFloat(someButton,
-                "x", -20.0f*scale, 600.0f*scale);
-
-        AnimatorSet animSet = new AnimatorSet();
-        animSet.play(anim1).after(500);
-        animSet.setDuration(5000);
-        animSet.setInterpolator(new AccelerateDecelerateInterpolator());
-        animSet.start();
     }
 
 }
