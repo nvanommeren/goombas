@@ -3,6 +3,7 @@ package com.android.goombas;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Point;
 import android.os.CountDownTimer;
 import android.support.v7.app.ActionBarActivity;
@@ -53,7 +54,15 @@ public class gameActivity extends ActionBarActivity {
             }
 
             public void onFinish() {
-                textView.setText("done!");
+                // finish the gameActivity
+                finish();
+
+                // go to the score page
+                Intent intent = new Intent(getBaseContext(), scoreActivity.class);
+                intent.putExtra("points", points);
+
+                startActivity(intent);
+
             }
         }.start();
 
@@ -64,8 +73,6 @@ public class gameActivity extends ActionBarActivity {
         points = game.getPoints();
         final TextView textView2 = (TextView) findViewById(R.id.textView2);
         textView2.setText(String.valueOf(points));
-
-        // addGoomba();
 
     }
 
@@ -135,9 +142,8 @@ public class gameActivity extends ActionBarActivity {
         // add goomba to view
         relativeLayout.addView(goomba);
 
-        // pick a random y as starting height and start the animation
-        int randomY = goomba.pickY();
-        goomba.startAnimation(randomY);
+        // start the animation of the goomba
+        goomba.startAnimation();
 
     }
 

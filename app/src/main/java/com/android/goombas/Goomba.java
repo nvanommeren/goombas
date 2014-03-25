@@ -29,7 +29,7 @@ public class Goomba extends Button {
     // field variables
 
     /** The start height of the goomba */
-    protected float	y;
+    protected int y;
 
     /** True if the goomba starts from the left of the screen */
     protected boolean fromLeft;
@@ -68,28 +68,23 @@ public class Goomba extends Button {
         screenX = size.x;
         // int width = display.getWidth();  // ?for API levels below 14
 
+        // pick a random starting height, but make sure the goomba fits in the screen
+        y = new Random().nextInt(screenY - 80);
+
+        // true if goomba starts from left
+        fromLeft = getRandomBoolean();
+
         this.value = 25;
     }
 
     /**
-    * Pick a random y as starting heigth for the goomba
-    */
-    public int pickY() {
-
-        // return a random height
-        return new Random().nextInt(screenY);
-
-    }
-
-
-    /**
      * Set the start height of the goomba
      */
-    public void setY(View btn, int randomY) {
+    public void setY(View btn) {
         // set starting height of the goomba
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0, randomY, 0, 0); // left,top,right,bottom
+        params.setMargins(0, y, 0, 0); // left,top,right,bottom
         btn.setLayoutParams(params);
     }
 
@@ -101,27 +96,36 @@ public class Goomba extends Button {
         return random.nextBoolean();
     }
 
-    public void startAnimation(int randomY) {
+    public void startAnimation() {
 
         // scaling for converting dpi to pixels
         float scale = getResources().getDisplayMetrics().density;
-        View goombaButton = findViewById(1);
 
-        goombaButton.setBackgroundResource(R.drawable.flying_goomba);
+        // pick random starting height for the goomba
+        setY(this);
+
+
+
+        ObjectAnimator anim1;
+
+        if (fromLeft) {
+             anim1 = ObjectAnimator.ofFloat(this,
+                    "x", -100.0f * scale, screenX * scale);
+
+            this.setBackgroundResource(R.drawable.flying_goomba);
+        }
+        else {
+            anim1 = ObjectAnimator.ofFloat(this,
+                    "x", screenX * scale + 100.0f, -100.0f * scale);
+
+            this.setBackgroundResource(R.drawable.flying_goomba_right);
+        }
 
         // Get the background, which has been compiled to an AnimationDrawable object.
-        AnimationDrawable frameAnimation = (AnimationDrawable) goombaButton.getBackground();
+        AnimationDrawable frameAnimation = (AnimationDrawable) this.getBackground();
 
         // Start the animation (looped playback by default).
         frameAnimation.start();
-
-
-        setY(goombaButton, randomY);
-
-        ObjectAnimator anim1 = ObjectAnimator.ofFloat(goombaButton,
-                "x", -100.0f * scale, screenX * scale); //600.0f
-
-
 
         animSet = new AnimatorSet();
         animSet.play(anim1);
@@ -131,9 +135,26 @@ public class Goomba extends Button {
     }
 
     public void shot() {
+
+        // change picture to dead goomba
         this.setBackgroundResource(R.drawable.dead_goomba);
+
+        // make sure the user can not "shoot" the goomba again
         this.setEnabled(false);
+
+        // stop the movement of the goomba
         animSet.cancel();
+
+        // scaling for converting dpi to pixelsfloat scale
+        float scale = getResources().getDisplayMetrics().density;
+
+        // make the goomba fade out
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, "alpha", 1.0f, 0.0f);
+        ObjectAnimator fall = ObjectAnimator.ofFloat(this, "y", y, y + 80.0f * scale);
+        AnimatorSet animSet2 = new AnimatorSet();
+        animSet2.play(fadeOut).with(fall);
+        animSet2.setDuration(1000);
+        animSet2.start();
 
     }
 

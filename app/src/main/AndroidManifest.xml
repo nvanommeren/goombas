@@ -22,6 +22,11 @@
             android:label="@string/title_activity_game"
             android:screenOrientation="landscape" >
         </activity>
+        <activity
+            android:name="com.android.goombas.scoreActivity"
+            android:label="@string/title_activity_score"
+            android:screenOrientation="landscape" >
+        </activity>
     </application>
 
 </manifest>

@@ -11,17 +11,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.TextView;
 
-public class MainActivity extends ActionBarActivity {
+public class scoreActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.fragment_score);
+
+        View decorView = getWindow().getDecorView();
 
         // Hide the status bar.
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptions);
 
         // Remember that you should never show the action bar if the
@@ -29,11 +31,11 @@ public class MainActivity extends ActionBarActivity {
         android.app.ActionBar actionBar = getActionBar();
         actionBar.hide();
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
-                    .commit();
-        }
+        Intent intent = getIntent();
+        String points = intent.getStringExtra("points");
+
+        TextView textView = (TextView) findViewById(R.id.textView2);
+        textView.setText(points);
     }
 
 
@@ -41,7 +43,7 @@ public class MainActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.score, menu);
         return true;
     }
 
@@ -68,27 +70,9 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            View rootView = inflater.inflate(R.layout.fragment_score, container, false);
             return rootView;
         }
-    }
-
-    /**
-     * Called when the user clicks the Start Game button
-     */
-    public void startGame(View view) {
-        Intent intent = new Intent(this, gameActivity.class);
-
-        startActivity(intent);
-    }
-
-    /**
-     * Called when the user clicks the High Scores button
-     */
-    public void highScores(View view) {
-        Intent intent = new Intent(this, scoreActivity.class);
-
-        startActivity(intent);
     }
 
 }
