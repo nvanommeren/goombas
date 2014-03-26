@@ -1,5 +1,6 @@
 package com.android.goombas;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -16,6 +17,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
 import java.util.Random;
@@ -24,7 +27,7 @@ import java.util.Random;
  * Created by Nikki on 21-3-14.
  */
 
-public class Goomba extends Button {
+public class Goomba extends ImageButton {
 
     // field variables
 
@@ -43,6 +46,10 @@ public class Goomba extends Button {
     /** The width of the screen */
     protected int screenX;
 
+    protected int flyDuriation;
+
+    protected int size;
+
     AnimatorSet animSet;
 
     Context myContext;
@@ -55,26 +62,47 @@ public class Goomba extends Button {
 
         myContext = context;
 
-        // set image of a goomba as the background of the button
-        // this.setBackgroundResource(R.drawable.up_paragoomba);
         this.setId(1);
 
         // calculate the height and width of the screen
         WindowManager wm = (WindowManager) myContext.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        screenY = size.y;
-        screenX = size.x;
+        Point screenSize = new Point();
+        display.getSize(screenSize);
+        screenY = screenSize.y;
+        screenX = screenSize.x;
         // int width = display.getWidth();  // ?for API levels below 14
 
+
+
+        // pick random the sort of the goomba
+        int index = new Random().nextInt(3);
+        // goomba far away
+        if (index == 0) {
+            this.flyDuriation = 4000;
+            this.value = 25;
+            this.size = 60;
+        }
+        // goomba middle far away
+        else if (index == 1) {
+            this.flyDuriation = 5000;
+            this.value = 10;
+            this.size = 90;
+        }
+        // goomba close
+        else {
+            this.flyDuriation = 6000;
+            this.value = 5;
+            this.size = 120;
+        }
+
         // pick a random starting height, but make sure the goomba fits in the screen
-        y = new Random().nextInt(screenY - 80);
+        y = new Random().nextInt(screenY - size);
 
         // true if goomba starts from left
-        fromLeft = getRandomBoolean();
+        fromLeft = new Random().nextBoolean();
 
-        this.value = 25;
+
     }
 
     /**
@@ -82,10 +110,10 @@ public class Goomba extends Button {
      */
     public void setY(View btn) {
         // set starting height of the goomba
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(size, size);
         params.setMargins(0, y, 0, 0); // left,top,right,bottom
         btn.setLayoutParams(params);
+
     }
 
     /**
@@ -104,21 +132,23 @@ public class Goomba extends Button {
         // pick random starting height for the goomba
         setY(this);
 
-
-
         ObjectAnimator anim1;
 
+        // when goomba flies from left to right
         if (fromLeft) {
              anim1 = ObjectAnimator.ofFloat(this,
-                    "x", -100.0f * scale, screenX * scale);
+                    "x", -size, screenX); // ??scale
 
             this.setBackgroundResource(R.drawable.flying_goomba);
         }
+
+        // when goomba flies from right to left
         else {
             anim1 = ObjectAnimator.ofFloat(this,
-                    "x", screenX * scale + 100.0f, -100.0f * scale);
+                    "x", screenX , -size); // ??scale
 
             this.setBackgroundResource(R.drawable.flying_goomba_right);
+
         }
 
         // Get the background, which has been compiled to an AnimationDrawable object.
@@ -129,9 +159,16 @@ public class Goomba extends Button {
 
         animSet = new AnimatorSet();
         animSet.play(anim1);
-        animSet.setDuration(5000);
+        animSet.setDuration(flyDuriation);
         animSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animSet.start();
+
+        // ?? werkt niet hide the goomba when the animation is finished
+        if (!animSet.isRunning()) {
+            this.setEnabled(false);
+            this.setVisibility(GONE);
+        }
+
     }
 
     public void shot() {

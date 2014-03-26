@@ -88,6 +88,8 @@ public class MainActivity extends ActionBarActivity {
     public void highScores(View view) {
         Intent intent = new Intent(this, scoreActivity.class);
 
+        intent.putExtra("directedFrom", "main");
+
         startActivity(intent);
     }
 

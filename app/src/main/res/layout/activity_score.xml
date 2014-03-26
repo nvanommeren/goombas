@@ -1,7 +1,191 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.android.goombas.scoreActivity"
-    tools:ignore="MergeRootFrame" />
+    android:background="@drawable/score_background">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/score"
+        android:id="@+id/textView"
+        android:textSize="30dp"
+        android:layout_marginTop="33dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/textView3"
+        android:layout_alignEnd="@+id/textView3" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView2"
+        android:textSize="55dp"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:layout_below="@+id/textView"
+        android:layout_alignLeft="@+id/textView"
+        android:layout_alignStart="@+id/textView" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/points"
+        android:id="@+id/textView3"
+        android:textSize="30dp"
+        android:layout_above="@+id/tableLayout"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="70dp"
+        android:layout_marginBottom="15dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView4"
+        android:text="@string/highScores"
+        android:textColor="#ffffff"
+        android:textStyle="bold|italic"
+        android:layout_alignTop="@+id/textView"
+        android:layout_alignRight="@+id/textView"
+        android:layout_alignEnd="@+id/textView"
+        android:textSize="40dp"
+        android:phoneNumber="true"
+        android:visibility="invisible" />
+
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:stretchColumns="3"
+        android:id="@+id/tableLayout"
+        android:layout_below="@+id/textView2"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_alignStart="@+id/textView2"
+        android:layout_marginTop="20dp"
+        android:layout_alignRight="@+id/textView3"
+        android:layout_alignEnd="@+id/textView3">
+
+        <TableRow
+            android:gravity="center_horizontal"
+            android:id="@+id/tableHead"
+            android:background="@drawable/border">
+            <TextView
+                android:text="#"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp" />
+            <TextView
+                android:text="Name"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp" />
+            <TextView
+                android:text="Points"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp" />
+        </TableRow>
+
+        <TableRow
+            android:gravity="center_horizontal"
+            android:id="@+id/row1"
+            android:background="@drawable/border">
+            <TextView
+                android:id="@+id/n1"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/name1"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/points1"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+        </TableRow>
+
+        <TableRow
+            android:gravity="center_horizontal"
+            android:id="@+id/row2"
+            android:background="@drawable/border">
+            <TextView
+                android:id="@+id/n2"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/name2"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/points2"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+        </TableRow>
+
+        <TableRow
+            android:gravity="center_horizontal"
+            android:id="@+id/row3"
+            android:background="@drawable/border">
+            <TextView
+                android:id="@+id/n3"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/name3"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/points3"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+        </TableRow>
+
+        <TableRow
+            android:gravity="center_horizontal"
+            android:id="@+id/row4"
+            android:background="@drawable/border">
+            <TextView
+                android:id="@+id/n4"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/name4"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/points4"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+        </TableRow>
+
+        <TableRow
+            android:gravity="center_horizontal"
+            android:id="@+id/row5"
+            android:background="@drawable/border">
+            <TextView
+                android:id="@+id/n5"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/name5"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+            <TextView
+                android:id="@+id/points5"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+        </TableRow>
+
+    </TableLayout>
+
+
+</RelativeLayout>
