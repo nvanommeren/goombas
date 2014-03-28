@@ -17,9 +17,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Gallery;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.Random;
 
@@ -75,8 +78,9 @@ public class Goomba extends ImageButton {
 
 
 
-        // pick random the sort of the goomba
+        // pick random the sort of the goomba verplaatsen naar gameActivity
         int index = new Random().nextInt(3);
+
         // goomba far away
         if (index == 0) {
             this.flyDuriation = 4000;
@@ -133,12 +137,16 @@ public class Goomba extends ImageButton {
         setY(this);
 
         ObjectAnimator anim1;
+        ObjectAnimator anim2;
+
+
 
         // when goomba flies from left to right
         if (fromLeft) {
-             anim1 = ObjectAnimator.ofFloat(this,
+            anim1 = ObjectAnimator.ofFloat(this,
                     "x", -size, screenX); // ??scale
-
+            // anim2 = ObjectAnimator.ofFloat(pointsView,
+            //         "x", -size, screenX);
             this.setBackgroundResource(R.drawable.flying_goomba);
         }
 
@@ -146,6 +154,8 @@ public class Goomba extends ImageButton {
         else {
             anim1 = ObjectAnimator.ofFloat(this,
                     "x", screenX , -size); // ??scale
+            // anim2 = ObjectAnimator.ofFloat(pointsView,
+//                    "x", screenX , -size);
 
             this.setBackgroundResource(R.drawable.flying_goomba_right);
 
@@ -158,7 +168,7 @@ public class Goomba extends ImageButton {
         frameAnimation.start();
 
         animSet = new AnimatorSet();
-        animSet.play(anim1);
+        animSet.play(anim1); //with(anim2)
         animSet.setDuration(flyDuriation);
         animSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animSet.start();
@@ -179,6 +189,9 @@ public class Goomba extends ImageButton {
         // make sure the user can not "shoot" the goomba again
         this.setEnabled(false);
 
+        // make value of the goomba visible to the user
+
+
         // stop the movement of the goomba
         animSet.cancel();
 
@@ -197,6 +210,10 @@ public class Goomba extends ImageButton {
 
     public int getValue() {
         return value;
+    }
+
+    public int getSize() {
+        return size;
     }
 
 }

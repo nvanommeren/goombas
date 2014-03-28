@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.CountDownTimer;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -18,11 +20,14 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -37,6 +42,18 @@ public class gameActivity extends ActionBarActivity {
 
     // class used to handle all database actions
     private DBAdapter db;
+
+    private ImageView target;
+
+    private ImageView bullet;
+
+    private RelativeLayout relativeLayout;
+
+    private RelativeLayout.LayoutParams targetParams;
+
+    private int targetSize;
+
+    private int numberOfBullets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,13 +78,15 @@ public class gameActivity extends ActionBarActivity {
             public void onTick(long millisUntilFinished) {
                 textView.setText(String.valueOf(millisUntilFinished / 1000));
 
-                if ((millisUntilFinished/1000) % 0.5 == 0) {
+                if ((millisUntilFinished/1000) % 1 == 0) {
 
                     int index = new Random().nextInt(3) + 1;
 
                     // add between 1 and 3 goomba's at the same time
                     for (int i = 0; i < index; i++ ) {
                         addGoomba();
+
+
                     }
                 }
             }
@@ -97,6 +116,37 @@ public class gameActivity extends ActionBarActivity {
 
         // start a new gamePlay
         gamePlay game = new gamePlay();
+
+        // add target to the view
+        target = new ImageView(this);
+        target.setBackgroundResource(R.drawable.target_small);
+        relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
+        targetSize = 80;
+
+        // set targetparams and make sure the targets starts outside the view
+        targetParams = new RelativeLayout.LayoutParams(targetSize, targetSize);
+        targetParams.setMargins(-100, -100, 0, 0); //? werkt niet
+        target.setLayoutParams(targetParams);
+        relativeLayout.addView(target);
+
+        numberOfBullets = 10;
+
+        // place the number of bullets in the view
+        for (int i = 0; i < numberOfBullets; i++) {
+            // add bullets to the right bottom corner of the screen
+            bullet = new ImageView(this);
+            bullet.setBackgroundResource(R.drawable.bullet_bill);
+            RelativeLayout.LayoutParams bulletParams = new RelativeLayout.LayoutParams(20, 70);
+
+            // set bullet in the bottom right corner
+            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            bulletParams.setMargins(0,0,i*25,0);
+
+            bullet.setId(i);
+            bullet.setLayoutParams(bulletParams);
+            relativeLayout.addView(bullet);
+        }
 
         // add number of point in the top left corner
         points = game.getPoints();
@@ -131,34 +181,83 @@ public class gameActivity extends ActionBarActivity {
     public void addGoomba() {
 
         // find the view
-        final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
+        // final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
 
         // create a new goomba
         final Goomba goomba = new Goomba(this);
 
-        // hide goomba after it is clicked
+
+
+        // add goomba to view
+        relativeLayout.addView(goomba);
+
+        // final int height = goomba.getStartHeight();
+
+        // final TextView showValue = addShowValue(goomba.getValue(), height);
+
+        // start the animation of the goomba
+        goomba.startAnimation();
+
+        // when the goomba is shot
         goomba.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                //when play is clicked show stop button and hide play button
+                // get coordinates of the shot goomba
+                int x = Math.round(goomba.getX());
+                int y = Math.round(goomba.getY());
+
+                // add parameters for the value and set the text to the value
+                final TextView showValue = new TextView(getBaseContext());
+                final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                         RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+                int correction = (int) (0.5 * goomba.getHeight());
+                params.setMargins(x + correction , y , 0, 0);
+                showValue.setLayoutParams(params);
+                showValue.setTextSize(30);
+                showValue.setTextColor(Color.parseColor("#FF0000"));
+                showValue.setText(String.valueOf(goomba.getValue()));
+
+                // show the value of the shot goomba
+                relativeLayout.addView(showValue);
+
+                // remove previous target
+                relativeLayout.removeView(target);
+
+                // set target to the coordinates of the shot goomba
+                targetParams.setMargins(x,y , 0, 0);
+                target.setLayoutParams(targetParams);
+
+                // add target to the view
+                relativeLayout.addView(target);
+
+                // function for a shot goomba
                 goomba.shot();
+
+                // make the value rise and fade out
+                ObjectAnimator fadeOut = ObjectAnimator.ofFloat(showValue, "alpha", 1.0f, 0.0f);
+                // ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", height , height - 40);
+                ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", y , y - 40);
+                AnimatorSet animSet = new AnimatorSet();
+                animSet.play(fadeOut).with(rise);
+                animSet.setDuration(1200);
+                animSet.start();
+
+                // remove one bullet from the view
+                ImageView usedBullet = (ImageView) findViewById(numberOfBullets - 1);
+                relativeLayout.removeView(usedBullet);
+
+                // update number of bullets
+                numberOfBullets --;
 
                 // update number of scored points
                 points += goomba.getValue();
                 final TextView textView2 = (TextView) findViewById(R.id.textView2);
                 textView2.setText(String.valueOf(points));
 
-                // points += goomba.getValue();
-
             }
         });
-
-        // add goomba to view
-        relativeLayout.addView(goomba);
-
-        // start the animation of the goomba
-        goomba.startAnimation();
 
     }
 
@@ -232,6 +331,94 @@ public class gameActivity extends ActionBarActivity {
         alert.setCancelable(false);
 
         alert.show();
+    }
+
+    public TextView addShowValue(int value, int height) {
+
+        // create textbox to show the number of points
+        final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                 RelativeLayout.LayoutParams.WRAP_CONTENT,
+                 RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(80, height, 0, 0);
+        final TextView showValue = new TextView(getBaseContext());
+
+
+        showValue.setLayoutParams(params);
+
+        showValue.setText(String.valueOf(value));
+        showValue.setTextColor(R.drawable.font);
+        showValue.setTextSize(35);
+        showValue.setTypeface(null, Typeface.BOLD);
+
+
+        // RelativeLayout layout =(RelativeLayout)findViewById(R.id.layout1);
+        relativeLayout.addView(showValue);
+        showValue.setVisibility(View.INVISIBLE);
+
+        return showValue;
+
+    }
+
+    /**
+     *  Handle touches on the screen
+     */
+    public boolean onTouchEvent(MotionEvent event) {
+        int eventaction = event.getAction();
+
+        switch (eventaction) {
+            case MotionEvent.ACTION_DOWN:
+
+                // remove previous target
+                relativeLayout.removeView(target);
+
+                // get coordinates of the touch
+                int x = (int)event.getX();
+                int y = (int)event.getY();
+
+                // correct so the target is in the middle of the touch
+                int correction = (int) (0.5 * targetSize);
+
+                // set target to the coordinates of the touch
+                targetParams.setMargins(x - correction,y - correction, 0, 0);
+                target.setLayoutParams(targetParams);
+
+                // add target to the view
+                relativeLayout.addView(target);
+
+                ImageView usedBullet = (ImageView) findViewById(numberOfBullets - 1);
+                relativeLayout.removeView(usedBullet);
+
+                numberOfBullets --;
+
+                if (numberOfBullets == 0) {
+
+                    // show reload button
+                    Button reloadButton = new Button(getBaseContext());
+                    reloadButton.setText("Reload");
+                    final RelativeLayout.LayoutParams reloadParams = new RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.WRAP_CONTENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    reloadParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    reloadParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    reloadButton.setLayoutParams(reloadParams);
+                    relativeLayout.addView(reloadButton);
+
+                }
+
+                // finger touches the screen
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                // finger moves on the screen
+                break;
+
+            case MotionEvent.ACTION_UP:
+                // finger leaves the screen
+                break;
+        }
+
+        // tell the system that we handled the event and no further processing is required
+        return true;
     }
 
 }
