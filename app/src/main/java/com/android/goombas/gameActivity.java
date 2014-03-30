@@ -55,6 +55,8 @@ public class gameActivity extends ActionBarActivity {
 
     private int numberOfBullets;
 
+    private boolean hasBullets;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,34 +121,17 @@ public class gameActivity extends ActionBarActivity {
 
         // add target to the view
         target = new ImageView(this);
-        target.setBackgroundResource(R.drawable.target_small);
+        // target.setBackgroundResource(R.drawable.target_small);
         relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
         targetSize = 80;
 
         // set targetparams and make sure the targets starts outside the view
         targetParams = new RelativeLayout.LayoutParams(targetSize, targetSize);
-        targetParams.setMargins(-100, -100, 0, 0); //? werkt niet
+        targetParams.setMargins(-100, -100, 0, 0);
         target.setLayoutParams(targetParams);
         relativeLayout.addView(target);
 
-        numberOfBullets = 10;
-
-        // place the number of bullets in the view
-        for (int i = 0; i < numberOfBullets; i++) {
-            // add bullets to the right bottom corner of the screen
-            bullet = new ImageView(this);
-            bullet.setBackgroundResource(R.drawable.bullet_bill);
-            RelativeLayout.LayoutParams bulletParams = new RelativeLayout.LayoutParams(20, 70);
-
-            // set bullet in the bottom right corner
-            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            bulletParams.setMargins(0,0,i*25,0);
-
-            bullet.setId(i);
-            bullet.setLayoutParams(bulletParams);
-            relativeLayout.addView(bullet);
-        }
+        loadBullets(relativeLayout);
 
         // add number of point in the top left corner
         points = game.getPoints();
@@ -203,24 +188,10 @@ public class gameActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
 
+
                 // get coordinates of the shot goomba
                 int x = Math.round(goomba.getX());
                 int y = Math.round(goomba.getY());
-
-                // add parameters for the value and set the text to the value
-                final TextView showValue = new TextView(getBaseContext());
-                final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                         RelativeLayout.LayoutParams.WRAP_CONTENT,
-                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-                int correction = (int) (0.5 * goomba.getHeight());
-                params.setMargins(x + correction , y , 0, 0);
-                showValue.setLayoutParams(params);
-                showValue.setTextSize(30);
-                showValue.setTextColor(Color.parseColor("#FF0000"));
-                showValue.setText(String.valueOf(goomba.getValue()));
-
-                // show the value of the shot goomba
-                relativeLayout.addView(showValue);
 
                 // remove previous target
                 relativeLayout.removeView(target);
@@ -232,17 +203,37 @@ public class gameActivity extends ActionBarActivity {
                 // add target to the view
                 relativeLayout.addView(target);
 
-                // function for a shot goomba
-                goomba.shot();
+                // only shoot goomba's when user has bullets
+                if (hasBullets) {
 
-                // make the value rise and fade out
-                ObjectAnimator fadeOut = ObjectAnimator.ofFloat(showValue, "alpha", 1.0f, 0.0f);
-                // ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", height , height - 40);
-                ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", y , y - 40);
-                AnimatorSet animSet = new AnimatorSet();
-                animSet.play(fadeOut).with(rise);
-                animSet.setDuration(1200);
-                animSet.start();
+                    // add parameters for the value and set the text to the value
+                    final TextView showValue = new TextView(getBaseContext());
+                    final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                             RelativeLayout.LayoutParams.WRAP_CONTENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    int correction = (int) (0.5 * goomba.getHeight());
+                    params.setMargins(x + correction , y , 0, 0);
+                    showValue.setLayoutParams(params);
+                    showValue.setTextSize(30);
+                    showValue.setTextColor(Color.parseColor("#FF0000"));
+                    showValue.setText(String.valueOf(goomba.getValue()));
+
+                    // show the value of the shot goomba
+                    relativeLayout.addView(showValue);
+
+                    // function for a shot goomba
+                    goomba.shot();
+
+                    // make the value rise and fade out
+                    ObjectAnimator fadeOut = ObjectAnimator.ofFloat(showValue, "alpha", 1.0f, 0.0f);
+                    // ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", height , height - 40);
+                    ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", y , y - 40);
+                    AnimatorSet animSet = new AnimatorSet();
+                    animSet.play(fadeOut).with(rise);
+                    animSet.setDuration(1200);
+                    animSet.start();
+
+                }
 
                 // remove one bullet from the view
                 ImageView usedBullet = (ImageView) findViewById(numberOfBullets - 1);
@@ -250,6 +241,12 @@ public class gameActivity extends ActionBarActivity {
 
                 // update number of bullets
                 numberOfBullets --;
+
+                if (numberOfBullets == 0) {
+                    target.setBackgroundResource(R.drawable.target_empty);
+                    hasBullets = false;
+                    addReloadButton();
+                }
 
                 // update number of scored points
                 points += goomba.getValue();
@@ -391,18 +388,10 @@ public class gameActivity extends ActionBarActivity {
                 numberOfBullets --;
 
                 if (numberOfBullets == 0) {
-
-                    // show reload button
-                    Button reloadButton = new Button(getBaseContext());
-                    reloadButton.setText("Reload");
-                    final RelativeLayout.LayoutParams reloadParams = new RelativeLayout.LayoutParams(
-                            RelativeLayout.LayoutParams.WRAP_CONTENT,
-                            RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    reloadParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                    reloadParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-                    reloadButton.setLayoutParams(reloadParams);
-                    relativeLayout.addView(reloadButton);
-
+                    hasBullets = false;
+                    target.setBackgroundResource(R.drawable.target_empty);
+                    // relativeLayout.addView(target);
+                    addReloadButton();
                 }
 
                 // finger touches the screen
@@ -419,6 +408,56 @@ public class gameActivity extends ActionBarActivity {
 
         // tell the system that we handled the event and no further processing is required
         return true;
+    }
+
+    public void loadBullets(View view) {
+
+        numberOfBullets = 10;
+
+        // place the number of bullets in the view
+        for (int i = 0; i < numberOfBullets; i++) {
+            // add bullets to the right bottom corner of the screen
+            bullet = new ImageView(this);
+            bullet.setBackgroundResource(R.drawable.bullet_bill);
+            RelativeLayout.LayoutParams bulletParams = new RelativeLayout.LayoutParams(20, 70);
+
+            // set bullet in the bottom right corner
+            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            bulletParams.setMargins(0,0,i*25,0);
+
+            bullet.setId(i);
+            bullet.setLayoutParams(bulletParams);
+            relativeLayout.addView(bullet);
+        }
+
+        hasBullets = true;
+        target.setBackgroundResource(R.drawable.target_small);
+
+    }
+
+    public void addReloadButton() {
+
+        // show reload button
+        final Button reloadButton = new Button(getBaseContext());
+        reloadButton.setText("Reload");
+        final RelativeLayout.LayoutParams reloadParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        reloadParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        reloadParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        reloadButton.setLayoutParams(reloadParams);
+        relativeLayout.addView(reloadButton);
+
+        // when the reload button is clicked, call load bullets
+        reloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadBullets(v);
+                relativeLayout.removeView(reloadButton);
+            }
+        });
+
     }
 
 }
