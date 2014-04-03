@@ -46,9 +46,12 @@ public class scoreActivity extends ActionBarActivity {
 
             // hide the text "You got ... points"
             TextView textView = (TextView) findViewById(R.id.textView);
+            TextView textView2 = (TextView) findViewById(R.id.textView2);
             TextView textView3 = (TextView) findViewById(R.id.textView3);
             textView.setVisibility(View.INVISIBLE);
+            textView2.setVisibility(View.INVISIBLE);
             textView3.setVisibility(View.INVISIBLE);
+
 
             // show the text "High Scores"
             TextView textView4 = (TextView) findViewById(R.id.textView4);
@@ -148,6 +151,16 @@ public class scoreActivity extends ActionBarActivity {
             textView.setVisibility(View.INVISIBLE);
             tableLayout.setVisibility(View.INVISIBLE);
         }
+    }
+
+    /**
+     *  Finish activity when game is send to the background
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        finish();
     }
 
 }

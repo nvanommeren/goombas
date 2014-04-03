@@ -90,6 +90,9 @@ public class MainActivity extends ActionBarActivity {
 
         intent.putExtra("directedFrom", "main");
 
+        // Intent intent = new Intent(this, CurvedMotion.class);
+
+
         startActivity(intent);
     }
 

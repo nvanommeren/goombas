@@ -3,19 +3,27 @@ package com.android.goombas;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.text.style.BackgroundColorSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Interpolator;
+import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Gallery;
@@ -106,6 +114,9 @@ public class Goomba extends ImageButton {
         // true if goomba starts from left
         fromLeft = new Random().nextBoolean();
 
+        // enable the default sound of the button
+        this.setSoundEffectsEnabled(false);
+
 
     }
 
@@ -137,16 +148,11 @@ public class Goomba extends ImageButton {
         setY(this);
 
         ObjectAnimator anim1;
-        ObjectAnimator anim2;
-
-
 
         // when goomba flies from left to right
         if (fromLeft) {
             anim1 = ObjectAnimator.ofFloat(this,
                     "x", -size, screenX); // ??scale
-            // anim2 = ObjectAnimator.ofFloat(pointsView,
-            //         "x", -size, screenX);
             this.setBackgroundResource(R.drawable.flying_goomba);
         }
 
@@ -154,8 +160,6 @@ public class Goomba extends ImageButton {
         else {
             anim1 = ObjectAnimator.ofFloat(this,
                     "x", screenX , -size); // ??scale
-            // anim2 = ObjectAnimator.ofFloat(pointsView,
-//                    "x", screenX , -size);
 
             this.setBackgroundResource(R.drawable.flying_goomba_right);
 
@@ -168,7 +172,7 @@ public class Goomba extends ImageButton {
         frameAnimation.start();
 
         animSet = new AnimatorSet();
-        animSet.play(anim1); //with(anim2)
+        animSet.play(anim1);
         animSet.setDuration(flyDuriation);
         animSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animSet.start();
@@ -212,8 +216,13 @@ public class Goomba extends ImageButton {
         return value;
     }
 
-    public int getSize() {
-        return size;
+    public void specialAnimation() {
+
+
     }
+
+
+
+
 
 }

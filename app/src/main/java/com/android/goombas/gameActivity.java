@@ -10,7 +10,9 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.CountDownTimer;
+import android.os.Vibrator;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -25,6 +27,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Interpolator;
+import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,6 +41,8 @@ import java.util.Random;
 public class gameActivity extends ActionBarActivity {
 
     private int points;
+
+    private SharedPreferences prefs;
 
     // file name for the shared preferences
     private final String PREFS_NAME = "goombasPrefs";
@@ -57,6 +64,19 @@ public class gameActivity extends ActionBarActivity {
 
     private boolean hasBullets;
 
+    private MediaPlayer mpReload;
+
+    private MediaPlayer mpGoomba;
+
+    private MediaPlayer mpEmpty;
+
+    private MediaPlayer mpBackground;
+
+    private CountDownTimer timer;
+
+    private boolean music;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,9 +93,13 @@ public class gameActivity extends ActionBarActivity {
         android.app.ActionBar actionBar = getActionBar();
         actionBar.hide();
 
+        // get Shared Preferences object
+        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+
         // add a timer in the top right corner
         final TextView textView = (TextView) findViewById(R.id.textView);
-        new CountDownTimer(60000, 1000) {
+        timer = new CountDownTimer(60000, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 textView.setText(String.valueOf(millisUntilFinished / 1000));
@@ -88,16 +112,18 @@ public class gameActivity extends ActionBarActivity {
                     for (int i = 0; i < index; i++ ) {
                         addGoomba();
 
-
                     }
                 }
             }
+
 
             public void onFinish() {
 
                 // get a new DBAdapter and open/create the database
                 db = new DBAdapter(getBaseContext());
                 db.open();
+
+                mpBackground.stop();
 
                 // check if last played score is a high score
                 if (db.checkHighScore(points)) {
@@ -115,6 +141,22 @@ public class gameActivity extends ActionBarActivity {
                 }
             }
         }.start();
+
+        // create a sound for reloading the bullets
+        mpReload = MediaPlayer.create(getApplicationContext(), R.raw.gun_cocking_01);
+
+        // create a sound for shooting a goomba
+        mpGoomba = MediaPlayer.create(getApplicationContext(), R.raw.smw_stomp);
+
+        // create a sound for shooting when the gun is empty
+        mpEmpty = MediaPlayer.create(getApplicationContext(), R.raw.gun_empty);
+
+        mpBackground = MediaPlayer.create(getApplicationContext(), R.raw.super_mario_bros);
+        mpBackground.setVolume(0.0f, 0.8f);
+        mpBackground.start();
+
+        // load the music button
+        loadMusicButton();
 
         // start a new gamePlay
         gamePlay game = new gamePlay();
@@ -233,6 +275,11 @@ public class gameActivity extends ActionBarActivity {
                     animSet.setDuration(1200);
                     animSet.start();
 
+                    if (music) {
+                        // play a sound when the goomba is hit
+                        mpGoomba.start();
+                    }
+
                 }
 
                 // remove one bullet from the view
@@ -259,19 +306,6 @@ public class gameActivity extends ActionBarActivity {
     }
 
     /**
-     *  Finish activity when user hits the back button
-     */
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        if ((keyCode == KeyEvent.KEYCODE_BACK))
-        {
-            finish();
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    /**
      *  Asks user for input of the name to add to the High Score table
      */
     public void insertName() {
@@ -285,8 +319,7 @@ public class gameActivity extends ActionBarActivity {
         final EditText input = new EditText(this);
         alert.setView(input);
 
-        // get the SharedPreferences object and place last inputted name in user input box
-        final SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        // place last inputted name in user input box
         final String name = prefs.getString("name", "Unknown");
         input.setText(name);
 
@@ -414,6 +447,12 @@ public class gameActivity extends ActionBarActivity {
 
         numberOfBullets = 10;
 
+
+        if (music) {
+            // play a sound when the user reload the buttons
+            mpReload.start();
+        }
+
         // place the number of bullets in the view
         for (int i = 0; i < numberOfBullets; i++) {
             // add bullets to the right bottom corner of the screen
@@ -438,15 +477,37 @@ public class gameActivity extends ActionBarActivity {
 
     public void addReloadButton() {
 
+        if (music) {
+
+            // play a sound when there are no bullets left
+            mpEmpty.start();
+        }
+
+        // vibrate for 0,5 second
+        Vibrator v = (Vibrator) this.getBaseContext().getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(500);
+
         // show reload button
         final Button reloadButton = new Button(getBaseContext());
         reloadButton.setText("Reload");
+
+        // put reload button in the bottom right of the screen
         final RelativeLayout.LayoutParams reloadParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         reloadParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         reloadParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        reloadParams.setMargins(0,0,10,10);
         reloadButton.setLayoutParams(reloadParams);
+
+
+        // make the reloadbutton green
+        reloadButton.setBackgroundResource(R.drawable.rounded_button);
+
+        // enable the default sound of the button
+        reloadButton.setSoundEffectsEnabled(false);
+
+        // add button to the view
         relativeLayout.addView(reloadButton);
 
         // when the reload button is clicked, call load bullets
@@ -454,10 +515,81 @@ public class gameActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 loadBullets(v);
+
                 relativeLayout.removeView(reloadButton);
             }
         });
 
+    }
+
+    public void loadMusicButton() {
+
+        // Get the value of music, music on (true) by default
+        music = prefs.getBoolean("music", true);
+
+        Button button = (Button) findViewById(R.id.music);
+
+        // set button to music on or off
+        if (music) {
+            button.setBackgroundResource(R.drawable.music_on);
+
+        }
+        else {
+            button.setBackgroundResource(R.drawable.music_off);
+
+            // set volume of the background music to zero
+            mpBackground.setVolume(0.0f, 0.0f);
+        }
+
+    }
+
+    public void toggleMusic(View view) {
+
+        // change the value of music
+        music = !music;
+
+        // open the Shared Preferences editor and save the new value of music
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("music", music);
+        editor.commit();
+
+        // find the clicked music button
+        Button button = (Button) findViewById(R.id.music);
+
+        // change the image of the music button
+        if (music) {
+            button.setBackgroundResource(R.drawable.music_on);
+
+            // set volume of the background music
+            mpBackground.setVolume(0.0f, 0.8f);
+        }
+        else {
+            button.setBackgroundResource(R.drawable.music_off);
+
+            // set volume of the background music to zero
+            mpBackground.setVolume(0.0f, 0.0f);
+        }
+    }
+
+
+    /**
+     *  Finish activity when game is send to the background
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // stop the background music
+        mpBackground.stop();
+
+        // stop the timer
+        if(timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+
+        // finish the activity
+        finish();
     }
 
 }

@@ -27,6 +27,12 @@
             android:label="@string/title_activity_score"
             android:screenOrientation="landscape" >
         </activity>
+        <activity
+            android:name="com.android.goombas.CurvedMotion"
+            android:label="@string/title_activity_score"
+            android:screenOrientation="landscape" >
+        </activity>
     </application>
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
 </manifest>
