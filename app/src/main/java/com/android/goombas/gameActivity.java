@@ -3,33 +3,17 @@ package com.android.goombas;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.Typeface;
-import android.media.MediaPlayer;
 import android.os.CountDownTimer;
-import android.os.Vibrator;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Display;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.Interpolator;
-import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -40,15 +24,10 @@ import java.util.Random;
 
 public class gameActivity extends ActionBarActivity {
 
-    private int points;
-
-    private SharedPreferences prefs;
-
     // file name for the shared preferences
     private final String PREFS_NAME = "goombasPrefs";
 
-    // class used to handle all database actions
-    private DBAdapter db;
+    private SharedPreferences prefs;
 
     private ImageView target;
 
@@ -60,32 +39,23 @@ public class gameActivity extends ActionBarActivity {
 
     private int targetSize;
 
-    private int numberOfBullets;
-
-    private boolean hasBullets;
-
-    private MediaPlayer mpReload;
-
-    private MediaPlayer mpGoomba;
-
-    private MediaPlayer mpEmpty;
-
-    private MediaPlayer mpBackground;
-
     private CountDownTimer timer;
 
-    private boolean music;
+    private gamePlay game;
+
+    // class used to handle all database actions
+    private DBAdapter db;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_game);
 
-        View decorView = getWindow().getDecorView();
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_game);
 
         // Hide the status bar.
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptions);
 
         // Remember that you should never show the action bar if the
@@ -96,89 +66,32 @@ public class gameActivity extends ActionBarActivity {
         // get Shared Preferences object
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
+        // set a count down timer
+        setTimer();
 
-        // add a timer in the top right corner
-        final TextView textView = (TextView) findViewById(R.id.textView);
-        timer = new CountDownTimer(60000, 1000) {
-
-            public void onTick(long millisUntilFinished) {
-                textView.setText(String.valueOf(millisUntilFinished / 1000));
-
-                if ((millisUntilFinished/1000) % 1 == 0) {
-
-                    int index = new Random().nextInt(3) + 1;
-
-                    // add between 1 and 3 goomba's at the same time
-                    for (int i = 0; i < index; i++ ) {
-                        addGoomba();
-
-                    }
-                }
-            }
-
-
-            public void onFinish() {
-
-                // get a new DBAdapter and open/create the database
-                db = new DBAdapter(getBaseContext());
-                db.open();
-
-                mpBackground.stop();
-
-                // check if last played score is a high score
-                if (db.checkHighScore(points)) {
-                    insertName();
-                }
-                else {
-                    // go to the score page
-                    Intent intent = new Intent(getBaseContext(), scoreActivity.class);
-                    intent.putExtra("points", String.valueOf(points));
-                    intent.putExtra("directedFrom", "game");
-
-                    startActivity(intent);
-
-                    finish();
-                }
-            }
-        }.start();
-
-        // create a sound for reloading the bullets
-        mpReload = MediaPlayer.create(getApplicationContext(), R.raw.gun_cocking_01);
-
-        // create a sound for shooting a goomba
-        mpGoomba = MediaPlayer.create(getApplicationContext(), R.raw.smw_stomp);
-
-        // create a sound for shooting when the gun is empty
-        mpEmpty = MediaPlayer.create(getApplicationContext(), R.raw.gun_empty);
-
-        mpBackground = MediaPlayer.create(getApplicationContext(), R.raw.super_mario_bros);
-        mpBackground.setVolume(0.0f, 0.8f);
-        mpBackground.start();
+        // start a new gamePlay
+        game = new gamePlay(this, prefs);
 
         // load the music button
         loadMusicButton();
 
-        // start a new gamePlay
-        gamePlay game = new gamePlay();
-
         // add target to the view
         target = new ImageView(this);
-        // target.setBackgroundResource(R.drawable.target_small);
         relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
         targetSize = 80;
 
-        // set targetparams and make sure the targets starts outside the view
+        // set parameters for the target and make sure the target starts outside the view
         targetParams = new RelativeLayout.LayoutParams(targetSize, targetSize);
         targetParams.setMargins(-100, -100, 0, 0);
         target.setLayoutParams(targetParams);
         relativeLayout.addView(target);
 
+        // add bullets to the view
         loadBullets(relativeLayout);
 
         // add number of point in the top left corner
-        points = game.getPoints();
         final TextView textView2 = (TextView) findViewById(R.id.textView2);
-        textView2.setText(String.valueOf(points));
+        textView2.setText(String.valueOf(game.getPoints()));
 
     }
 
@@ -197,30 +110,88 @@ public class gameActivity extends ActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        // when the user selects the main menu
+        if (id == R.id.activity_main) {
+
+            // start an intent to go to the main activity
+            Intent intent = new Intent(getBaseContext(), MainActivity.class);
+            startActivity(intent);
+
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Sets a timer which counts down from 60 seconds and calls the addGoomba function every
+     * second. Finishes the game when the time is up.
+     */
+    private void setTimer() {
+
+        // add a timer in the textView in the top right corner
+        final TextView textView = (TextView) findViewById(R.id.textView);
+
+        // count down from 60 seconds
+        new CountDownTimer(60000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                textView.setText(String.valueOf(millisUntilFinished / 1000));
+
+                // called every second
+                if ((millisUntilFinished/1000) % 1 == 0) {
+
+                    // random number between 1 and 3
+                    int index = new Random().nextInt(3) + 1;
+
+                    // add between 1 and 3 goomba's at the same time
+                    for (int i = 0; i < index; i++ ) {
+                        addGoomba();
+
+                    }
+                }
+            }
+
+            // when the time is up
+            public void onFinish() {
+
+                // stop the background music
+                game.stopMusic();
+
+                // get a new DBAdapter and open/create the database
+                db = new DBAdapter(getBaseContext());
+                db.open();
+
+                // check if last played score is a high score
+                if (db.checkHighScore(game.getPoints())) {
+                    insertName();
+                }
+                else {
+                    // go to the score page
+                    Intent intent = new Intent(getBaseContext(), scoreActivity.class);
+                    intent.putExtra("points", String.valueOf(game.getPoints()));
+                    intent.putExtra("directedFrom", "game");
+
+                    startActivity(intent);
+
+                    finish();
+                }
+            }
+        }.start();
+
+    }
 
 
+    /**
+     * Adds a new Goomba to the view and sets the target to the coordinates of the
+     * goomba when it is shot.
+     */
     public void addGoomba() {
-
-        // find the view
-        // final RelativeLayout relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
 
         // create a new goomba
         final Goomba goomba = new Goomba(this);
 
-
-
         // add goomba to view
         relativeLayout.addView(goomba);
-
-        // final int height = goomba.getStartHeight();
-
-        // final TextView showValue = addShowValue(goomba.getValue(), height);
 
         // start the animation of the goomba
         goomba.startAnimation();
@@ -230,7 +201,6 @@ public class gameActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
 
-
                 // get coordinates of the shot goomba
                 int x = Math.round(goomba.getX());
                 int y = Math.round(goomba.getY());
@@ -239,19 +209,21 @@ public class gameActivity extends ActionBarActivity {
                 relativeLayout.removeView(target);
 
                 // set target to the coordinates of the shot goomba
-                targetParams.setMargins(x,y , 0, 0);
+                targetParams.setMargins(x ,y , 0, 0);
                 target.setLayoutParams(targetParams);
 
                 // add target to the view
                 relativeLayout.addView(target);
 
                 // only shoot goomba's when user has bullets
-                if (hasBullets) {
+                if (game.getNumberOfBullets() > 0) {
 
-                    // add parameters for the value and set the text to the value
-                    final TextView showValue = new TextView(getBaseContext());
+                    // add a new TextView to show the value of the shot goomba
+                    TextView showValue = new TextView(getBaseContext());
+
+                    // set parameters for the value of the shot goomba
                     final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                             RelativeLayout.LayoutParams.WRAP_CONTENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT,
                             RelativeLayout.LayoutParams.WRAP_CONTENT);
                     int correction = (int) (0.5 * goomba.getHeight());
                     params.setMargins(x + correction , y , 0, 0);
@@ -260,45 +232,41 @@ public class gameActivity extends ActionBarActivity {
                     showValue.setTextColor(Color.parseColor("#FF0000"));
                     showValue.setText(String.valueOf(goomba.getValue()));
 
-                    // show the value of the shot goomba
+                    // add the value of the shot goomba to the view
                     relativeLayout.addView(showValue);
-
-                    // function for a shot goomba
-                    goomba.shot();
 
                     // make the value rise and fade out
                     ObjectAnimator fadeOut = ObjectAnimator.ofFloat(showValue, "alpha", 1.0f, 0.0f);
-                    // ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", height , height - 40);
                     ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", y , y - 40);
                     AnimatorSet animSet = new AnimatorSet();
                     animSet.play(fadeOut).with(rise);
                     animSet.setDuration(1200);
                     animSet.start();
 
-                    if (music) {
-                        // play a sound when the goomba is hit
-                        mpGoomba.start();
-                    }
+                    // function for a shot goomba
+                    goomba.shot();
+
+                    // play the sound of a shot goomba
+                    game.playShotGoomba();
 
                 }
 
                 // remove one bullet from the view
-                ImageView usedBullet = (ImageView) findViewById(numberOfBullets - 1);
+                ImageView usedBullet = (ImageView) findViewById(game.getNumberOfBullets() - 1);
                 relativeLayout.removeView(usedBullet);
 
-                // update number of bullets
-                numberOfBullets --;
+                game.updateBullets(target);
 
-                if (numberOfBullets == 0) {
-                    target.setBackgroundResource(R.drawable.target_empty);
-                    hasBullets = false;
+                if (game.getNumberOfBullets() == 0) {
+
                     addReloadButton();
                 }
 
-                // update number of scored points
-                points += goomba.getValue();
+                // update the number of scored points in the game
+                game.updatePoints(goomba);
+
                 final TextView textView2 = (TextView) findViewById(R.id.textView2);
-                textView2.setText(String.valueOf(points));
+                textView2.setText(String.valueOf(game.getPoints()));
 
             }
         });
@@ -343,12 +311,12 @@ public class gameActivity extends ActionBarActivity {
             editor.putString("name", insertName);
             editor.commit();
 
-            db.insertScore(insertName, points);
+            db.insertScore(insertName, game.getPoints());
 
             // start a new intent to show the highscores
             Intent intent2 = new Intent(getBaseContext(), scoreActivity.class);
 
-            intent2.putExtra("points", String.valueOf(points));
+            intent2.putExtra("points", String.valueOf(game.getPoints()));
             intent2.putExtra("directedFrom", "game");
             startActivity(intent2);
 
@@ -361,32 +329,6 @@ public class gameActivity extends ActionBarActivity {
         alert.setCancelable(false);
 
         alert.show();
-    }
-
-    public TextView addShowValue(int value, int height) {
-
-        // create textbox to show the number of points
-        final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                 RelativeLayout.LayoutParams.WRAP_CONTENT,
-                 RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(80, height, 0, 0);
-        final TextView showValue = new TextView(getBaseContext());
-
-
-        showValue.setLayoutParams(params);
-
-        showValue.setText(String.valueOf(value));
-        showValue.setTextColor(R.drawable.font);
-        showValue.setTextSize(35);
-        showValue.setTypeface(null, Typeface.BOLD);
-
-
-        // RelativeLayout layout =(RelativeLayout)findViewById(R.id.layout1);
-        relativeLayout.addView(showValue);
-        showValue.setVisibility(View.INVISIBLE);
-
-        return showValue;
-
     }
 
     /**
@@ -415,97 +357,91 @@ public class gameActivity extends ActionBarActivity {
                 // add target to the view
                 relativeLayout.addView(target);
 
-                ImageView usedBullet = (ImageView) findViewById(numberOfBullets - 1);
+                ImageView usedBullet = (ImageView) findViewById(game.getNumberOfBullets() - 1);
                 relativeLayout.removeView(usedBullet);
 
-                numberOfBullets --;
+                game.updateBullets(target);
 
-                if (numberOfBullets == 0) {
-                    hasBullets = false;
-                    target.setBackgroundResource(R.drawable.target_empty);
-                    // relativeLayout.addView(target);
+                if (game.getNumberOfBullets() == 0) {
                     addReloadButton();
                 }
 
                 // finger touches the screen
                 break;
 
-            case MotionEvent.ACTION_MOVE:
-                // finger moves on the screen
-                break;
-
-            case MotionEvent.ACTION_UP:
-                // finger leaves the screen
-                break;
         }
 
         // tell the system that we handled the event and no further processing is required
         return true;
     }
 
+
+    /**
+     * Called when the user clicks the "Reload" button
+     */
     public void loadBullets(View view) {
 
-        numberOfBullets = 10;
+        game.playReload();
 
-
-        if (music) {
-            // play a sound when the user reload the buttons
-            mpReload.start();
-        }
+        int numberOfBullets = game.getNumberOfBullets();
 
         // place the number of bullets in the view
         for (int i = 0; i < numberOfBullets; i++) {
+
             // add bullets to the right bottom corner of the screen
             bullet = new ImageView(this);
-            bullet.setBackgroundResource(R.drawable.bullet_bill);
-            RelativeLayout.LayoutParams bulletParams = new RelativeLayout.LayoutParams(20, 70);
 
-            // set bullet in the bottom right corner
-            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            bulletParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            bulletParams.setMargins(0,0,i*25,0);
+            // set settings for the bullet
+            bullet = game.addBullet(bullet, i);
 
-            bullet.setId(i);
-            bullet.setLayoutParams(bulletParams);
             relativeLayout.addView(bullet);
         }
 
-        hasBullets = true;
         target.setBackgroundResource(R.drawable.target_small);
 
     }
 
-    public void addReloadButton() {
 
-        if (music) {
+    /**
+     * Loads the right background image for the music button
+     */
+    public void loadMusicButton() {
 
-            // play a sound when there are no bullets left
-            mpEmpty.start();
+        Button button = (Button) findViewById(R.id.music);
+
+        // set button to music on or off
+        if (game.getMusicValue()) {
+            button.setBackgroundResource(R.drawable.music_on);
+
+        }
+        else {
+            button.setBackgroundResource(R.drawable.music_off);
+
+            // set volume of the background music to zero
+            game.muteBackground();
         }
 
-        // vibrate for 0,5 second
-        Vibrator v = (Vibrator) this.getBaseContext().getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(500);
+    }
 
-        // show reload button
-        final Button reloadButton = new Button(getBaseContext());
-        reloadButton.setText("Reload");
+    /**
+     * Called when the user clicks the music button. Changes the state of music.
+     */
+    public void toggleMusic(View view) {
 
-        // put reload button in the bottom right of the screen
-        final RelativeLayout.LayoutParams reloadParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
-        reloadParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        reloadParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        reloadParams.setMargins(0,0,10,10);
-        reloadButton.setLayoutParams(reloadParams);
+        // find the clicked music button
+        Button button = (Button) findViewById(R.id.music);
+
+        game.switchMusic(button);
 
 
-        // make the reloadbutton green
-        reloadButton.setBackgroundResource(R.drawable.rounded_button);
+    }
 
-        // enable the default sound of the button
-        reloadButton.setSoundEffectsEnabled(false);
+    /**
+     * Add reload button to the view.
+     */
+    private void addReloadButton() {
+
+        final Button reloadButton = game.setReloadButton();
 
         // add button to the view
         relativeLayout.addView(reloadButton);
@@ -519,58 +455,7 @@ public class gameActivity extends ActionBarActivity {
                 relativeLayout.removeView(reloadButton);
             }
         });
-
     }
-
-    public void loadMusicButton() {
-
-        // Get the value of music, music on (true) by default
-        music = prefs.getBoolean("music", true);
-
-        Button button = (Button) findViewById(R.id.music);
-
-        // set button to music on or off
-        if (music) {
-            button.setBackgroundResource(R.drawable.music_on);
-
-        }
-        else {
-            button.setBackgroundResource(R.drawable.music_off);
-
-            // set volume of the background music to zero
-            mpBackground.setVolume(0.0f, 0.0f);
-        }
-
-    }
-
-    public void toggleMusic(View view) {
-
-        // change the value of music
-        music = !music;
-
-        // open the Shared Preferences editor and save the new value of music
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("music", music);
-        editor.commit();
-
-        // find the clicked music button
-        Button button = (Button) findViewById(R.id.music);
-
-        // change the image of the music button
-        if (music) {
-            button.setBackgroundResource(R.drawable.music_on);
-
-            // set volume of the background music
-            mpBackground.setVolume(0.0f, 0.8f);
-        }
-        else {
-            button.setBackgroundResource(R.drawable.music_off);
-
-            // set volume of the background music to zero
-            mpBackground.setVolume(0.0f, 0.0f);
-        }
-    }
-
 
     /**
      *  Finish activity when game is send to the background
@@ -580,7 +465,7 @@ public class gameActivity extends ActionBarActivity {
         super.onStop();
 
         // stop the background music
-        mpBackground.stop();
+        game.stopMusic();
 
         // stop the timer
         if(timer != null) {

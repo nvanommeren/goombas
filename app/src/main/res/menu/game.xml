@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.android.goombas.gameActivity" >
     
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+    <item android:id="@+id/activity_main"
+        android:title="@string/main"
         android:orderInCategory="100"
         app:showAsAction="never" />
 </menu>

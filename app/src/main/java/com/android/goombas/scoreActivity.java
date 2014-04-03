@@ -86,7 +86,22 @@ public class scoreActivity extends ActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        // when the user selects the main menu
+        if (id == R.id.activity_main) {
+
+            // start an intent to go to the main activity
+            Intent intent = new Intent(getBaseContext(), MainActivity.class);
+            startActivity(intent);
+
+            return true;
+        }
+        // when the user selects to play a new game
+        else if (id == R.id.activity_game) {
+
+            // start an intent to go to the game activity
+            Intent intent = new Intent(getBaseContext(), gameActivity.class);
+            startActivity(intent);
+
             return true;
         }
         return super.onOptionsItemSelected(item);

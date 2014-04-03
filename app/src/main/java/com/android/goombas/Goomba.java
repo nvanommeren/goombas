@@ -85,7 +85,6 @@ public class Goomba extends ImageButton {
         // int width = display.getWidth();  // ?for API levels below 14
 
 
-
         // pick random the sort of the goomba verplaatsen naar gameActivity
         int index = new Random().nextInt(3);
 

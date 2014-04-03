@@ -11,5 +11,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="score">Your Score is:</string>
     <string name="points">Points</string>
+    <string name="main">Return to Main</string>
+    <string name="newGame">Start New Game</string>
 
 </resources>
