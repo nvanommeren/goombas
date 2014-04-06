@@ -1,3 +1,14 @@
+/***********************************************************************
+ *
+ * Shoot the Goomba's
+ * Nikki van Ommeren
+ * nikki_vanommeren@hotmail.com, 6229670
+ *
+ * Main Activity class for the Shoot the Goomba's game, handles the
+ * main page of the game.
+ *
+ ***********************************************************************/
+
 package com.android.goombas;
 
 import android.content.Intent;

@@ -1,25 +1,29 @@
+/***********************************************************************
+ *
+ * Shoot the Goomba's
+ * Nikki van Ommeren
+ * nikki_vanommeren@hotmail.com, 6229670
+ *
+ * Score Activity class for the Shoot the Goomba's game, handles the
+ * pages where the high scores are shown.
+ *
+ ***********************************************************************/
+
 package com.android.goombas;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.os.Build;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
 public class scoreActivity extends ActionBarActivity {
 
-    // class used to handle all database actions
+    /** Class used to handle all database actions */
     private DBAdapter db;
 
     @Override
@@ -108,7 +112,7 @@ public class scoreActivity extends ActionBarActivity {
     }
 
     /**
-     * Show the high scores of chosen length in a table to the user
+     * Show the high scores in a table to the user
      */
     public void showData()
     {

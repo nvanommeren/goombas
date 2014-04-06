@@ -1,55 +1,32 @@
+/***********************************************************************
+ *
+ * Shoot the Goomba's
+ * Nikki van Ommeren
+ * nikki_vanommeren@hotmail.com, 6229670
+ *
+ * Class for a Goomba, the object you need to click in order to get
+ * points, extends the Image Button class.
+ *
+ ***********************************************************************/
+
 package com.android.goombas;
 
-import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
-import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.StateListDrawable;
-import android.graphics.drawable.TransitionDrawable;
-import android.text.style.BackgroundColorSpan;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.Interpolator;
-import android.view.animation.Transformation;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Gallery;
-import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
+import java.util.Properties;
 import java.util.Random;
 
-/**
- * Created by Nikki on 21-3-14.
- */
-
 public class Goomba extends ImageButton {
-
-    // field variables
-
-    /** The start height of the goomba */
-    protected int y;
-
-    /** True if the goomba starts from the left of the screen */
-    protected boolean fromLeft;
-
-    /** The value of a goomba */
-    protected int value;
 
     /** The height of the screen */
     protected int screenY;
@@ -57,25 +34,33 @@ public class Goomba extends ImageButton {
     /** The width of the screen */
     protected int screenX;
 
+    /** The value of a goomba */
+    protected int value;
+
     protected int flyDuriation;
 
     protected int size;
 
-    AnimatorSet animSet;
+    /** The start height of the goomba */
+    protected int y;
 
-    Context myContext;
+    /** True if the goomba starts from the left of the screen */
+    protected boolean fromLeft;
+
+    /** Animator Set for the movement of the Goomba */
+    protected AnimatorSet animSet;
+
+    protected Context myContext;
 
     /**
-    * Contructs a goomba based on a start height and a direction.
+    * Contructs a Goomba based on a start height and a direction.
     */
-    protected Goomba(Context context) {
+    protected Goomba(Context context, int index) {
         super(context);
 
         myContext = context;
 
-        this.setId(1);
-
-        // calculate the height and width of the screen
+        // Calculate the height and width of the screen
         WindowManager wm = (WindowManager) myContext.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point screenSize = new Point();
@@ -84,81 +69,65 @@ public class Goomba extends ImageButton {
         screenX = screenSize.x;
         // int width = display.getWidth();  // ?for API levels below 14
 
+        // Get file with the configuration properties
+        AssetsPropertyReader assetsPropertyReader = new AssetsPropertyReader(context);
+        Properties prop = assetsPropertyReader.getProperties("config.properties");
 
-        // pick random the sort of the goomba verplaatsen naar gameActivity
-        int index = new Random().nextInt(3);
+        // Get the values, fly durations and sizes as defined in the config file
+        final String[] values = prop.getProperty("value").split(",");
+        final String[] flyDurations = prop.getProperty("flyDuration").split(",");
+        final String[] sizes = prop.getProperty("size").split(",");
 
-        // goomba far away
-        if (index == 0) {
-            this.flyDuriation = 4000;
-            this.value = 25;
-            this.size = 60;
-        }
-        // goomba middle far away
-        else if (index == 1) {
-            this.flyDuriation = 5000;
-            this.value = 10;
-            this.size = 90;
-        }
-        // goomba close
-        else {
-            this.flyDuriation = 6000;
-            this.value = 5;
-            this.size = 120;
-        }
+        // Set the value, fly duration and size of the Goomba
+        this.value = Integer.parseInt(values[index]);
+        this.flyDuriation = Integer.parseInt(flyDurations[index]);
+        this.size = Integer.parseInt(sizes[index]);
 
-        // pick a random starting height, but make sure the goomba fits in the screen
+        // Pick a random starting height, but make sure the Goomba fits in the screen
         y = new Random().nextInt(screenY - size);
 
-        // true if goomba starts from left
+        // True if Goomba starts from left
         fromLeft = new Random().nextBoolean();
 
-        // enable the default sound of the button
+        // Enable the default sound of the button
         this.setSoundEffectsEnabled(false);
 
 
     }
 
     /**
-     * Set the start height of the goomba
+     * Sets the starting height of the Goomba
      */
-    public void setY(View btn) {
-        // set starting height of the goomba
+    private void setY(View goomba) {
+
+        // Add parameters for the starting height to the Goomba
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(size, size);
         params.setMargins(0, y, 0, 0); // left,top,right,bottom
-        btn.setLayoutParams(params);
+        goomba.setLayoutParams(params);
 
     }
 
     /**
-     * return true if the goomba is starting from left
+     * Starts the movement of the Goomba.
      */
-    public boolean getRandomBoolean() {
-        Random random = new Random();
-        return random.nextBoolean();
-    }
-
     public void startAnimation() {
 
-        // scaling for converting dpi to pixels
-        float scale = getResources().getDisplayMetrics().density;
-
-        // pick random starting height for the goomba
+        // Pick random starting height for the Goomba
         setY(this);
 
         ObjectAnimator anim1;
 
-        // when goomba flies from left to right
+        // When Goomba moves from left to right
         if (fromLeft) {
             anim1 = ObjectAnimator.ofFloat(this,
-                    "x", -size, screenX); // ??scale
+                    "x", -size, screenX);
             this.setBackgroundResource(R.drawable.flying_goomba);
         }
 
-        // when goomba flies from right to left
+        // When Goomba moves from right to left
         else {
             anim1 = ObjectAnimator.ofFloat(this,
-                    "x", screenX , -size); // ??scale
+                    "x", screenX , -size);
 
             this.setBackgroundResource(R.drawable.flying_goomba_right);
 
@@ -176,32 +145,27 @@ public class Goomba extends ImageButton {
         animSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animSet.start();
 
-        // ?? werkt niet hide the goomba when the animation is finished
-        if (!animSet.isRunning()) {
-            this.setEnabled(false);
-            this.setVisibility(GONE);
-        }
-
     }
 
+    /**
+     * Called when a Goomba is clicked, changes the picture of the Goomba and enables
+     * the user to click the Goomba again.
+     */
     public void shot() {
 
-        // change picture to dead goomba
+        // Change picture to dead Goomba
         this.setBackgroundResource(R.drawable.dead_goomba);
 
-        // make sure the user can not "shoot" the goomba again
+        // Make sure the user can not "shoot" the Goomba again
         this.setEnabled(false);
 
-        // make value of the goomba visible to the user
-
-
-        // stop the movement of the goomba
+        // Stop the movement of the Goomba
         animSet.cancel();
 
-        // scaling for converting dpi to pixelsfloat scale
+        // Scaling for converting dpi to pixelsfloat scale
         float scale = getResources().getDisplayMetrics().density;
 
-        // make the goomba fade out
+        // Make the Goomba fade out and move downwards
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, "alpha", 1.0f, 0.0f);
         ObjectAnimator fall = ObjectAnimator.ofFloat(this, "y", y, y + 80.0f * scale);
         AnimatorSet animSet2 = new AnimatorSet();
@@ -211,17 +175,12 @@ public class Goomba extends ImageButton {
 
     }
 
+    /**
+     * Returns the value of the Goomba.
+     */
     public int getValue() {
         return value;
     }
-
-    public void specialAnimation() {
-
-
-    }
-
-
-
 
 
 }

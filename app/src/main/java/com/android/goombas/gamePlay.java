@@ -1,23 +1,25 @@
+/***********************************************************************
+ *
+ * Shoot the Goomba's
+ * Nikki van Ommeren
+ * nikki_vanommeren@hotmail.com, 6229670
+ *
+ * Class for a "Shoot the Goomba's" game.
+ *
+ ***********************************************************************/
+
 package com.android.goombas;
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.os.Vibrator;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+
+import java.util.Properties;
 
 
-/**
- * Created by Nikki on 23-3-14.
- */
-public class gamePlay {
+public class GamePlay {
 
     private final Context myContext;
 
@@ -27,7 +29,7 @@ public class gamePlay {
     private int numberOfBullets;
     private boolean music;
 
-    // MediaPlayers for the sounds
+    /** MediaPlayers for the sounds */
     private MediaPlayer mpReload;
     private MediaPlayer mpGoomba;
     private MediaPlayer mpEmpty;
@@ -36,7 +38,7 @@ public class gamePlay {
     /**
      * Construct the variables for the shoot the goomba's game
      */
-    protected gamePlay(Context context, SharedPreferences preferences) {
+    protected GamePlay(Context context, SharedPreferences preferences) {
 
         this.myContext = context;
 
@@ -45,8 +47,12 @@ public class gamePlay {
         // set scored points to zero
         this.points = 0;
 
-        // set number of bullets
-        this.numberOfBullets = 10;
+        // get file with the configuration properties
+        AssetsPropertyReader assetsPropertyReader = new AssetsPropertyReader(myContext);
+        Properties prop = assetsPropertyReader.getProperties("config.properties");
+
+        // set number of bullets as defined in the config file
+        this.numberOfBullets = Integer.parseInt(prop.getProperty("numberOfBullets"));
 
         // Get the value of music, music on (true) by default
         this.music = prefs.getBoolean("music", true);
@@ -120,11 +126,16 @@ public class gamePlay {
     }
 
     /**
-     * Play reload sound.
+     * Play reload sound and reset the number of bullets.
      */
     public void playReload() {
 
-        numberOfBullets = 10;
+        // get file with the configuration properties
+        AssetsPropertyReader assetsPropertyReader = new AssetsPropertyReader(myContext);
+        Properties prop = assetsPropertyReader.getProperties("config.properties");
+
+        // set number of bullets as defined in the config file
+        numberOfBullets = Integer.parseInt(prop.getProperty("numberOfBullets"));
 
         if (music) {
             // play a sound when the user reload the buttons
@@ -167,62 +178,6 @@ public class gamePlay {
         if (numberOfBullets == 0) {
             target.setBackgroundResource(R.drawable.target_empty);
         }
-    }
-
-
-    /**
-     * Set parameters for adding a single bullet
-     */
-    public ImageView addBullet(ImageView bullet, int i) {
-        bullet.setBackgroundResource(R.drawable.bullet_bill);
-        RelativeLayout.LayoutParams bulletParams = new RelativeLayout.LayoutParams(20, 70);
-
-        // set bullet in the bottom right corner
-        bulletParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        bulletParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        bulletParams.setMargins(0,0,i*25,0);
-
-        bullet.setId(i);
-        bullet.setLayoutParams(bulletParams);
-
-        return bullet;
-    }
-
-
-    /**
-     * Set parameters for the reload button
-     */
-    public Button setReloadButton() {
-
-        // play a sound when there are no bullets left
-        playEmpty();
-
-        // vibrate for 0,5 second
-        Vibrator v = (Vibrator) this.myContext.getSystemService(Context.VIBRATOR_SERVICE);
-        v.vibrate(500);
-
-        // show reload button
-        final Button reloadButton = new Button(myContext);
-        reloadButton.setText("Reload");
-
-        // put reload button in the bottom right of the screen
-        final RelativeLayout.LayoutParams reloadParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
-        reloadParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        reloadParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        reloadParams.setMargins(0,0,10,10);
-        reloadButton.setLayoutParams(reloadParams);
-
-
-        // make the reloadbutton green
-        reloadButton.setBackgroundResource(R.drawable.rounded_button);
-
-        // enable the default sound of the button
-        reloadButton.setSoundEffectsEnabled(false);
-
-        return reloadButton;
-
     }
 
     public int getNumberOfBullets() {

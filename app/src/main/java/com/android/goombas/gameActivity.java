@@ -1,12 +1,20 @@
+/***********************************************************************
+ *
+ * Shoot the Goomba's
+ * Nikki van Ommeren
+ * nikki_vanommeren@hotmail.com, 6229670
+ *
+ * Game Activity class for the Shoot the Goomba's game, handles the
+ * page where the game is played.
+ *
+ ***********************************************************************/
+
 package com.android.goombas;
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.CountDownTimer;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -24,14 +32,12 @@ import java.util.Random;
 
 public class gameActivity extends ActionBarActivity {
 
-    // file name for the shared preferences
+    /** File name for the Shared Preferences object */
     private final String PREFS_NAME = "goombasPrefs";
 
     private SharedPreferences prefs;
 
     private ImageView target;
-
-    private ImageView bullet;
 
     private RelativeLayout relativeLayout;
 
@@ -41,9 +47,9 @@ public class gameActivity extends ActionBarActivity {
 
     private CountDownTimer timer;
 
-    private gamePlay game;
+    private GamePlay game;
 
-    // class used to handle all database actions
+    /** Class used to handle all database actions */
     private DBAdapter db;
 
 
@@ -70,7 +76,7 @@ public class gameActivity extends ActionBarActivity {
         setTimer();
 
         // start a new gamePlay
-        game = new gamePlay(this, prefs);
+        game = new GamePlay(this, prefs);
 
         // load the music button
         loadMusicButton();
@@ -185,10 +191,13 @@ public class gameActivity extends ActionBarActivity {
      * Adds a new Goomba to the view and sets the target to the coordinates of the
      * goomba when it is shot.
      */
-    public void addGoomba() {
+    private void addGoomba() {
+
+        // pick random the sort of the goomba
+        int index = new Random().nextInt(3);
 
         // create a new goomba
-        final Goomba goomba = new Goomba(this);
+        final Goomba goomba = new Goomba(this, index);
 
         // add goomba to view
         relativeLayout.addView(goomba);
@@ -218,30 +227,18 @@ public class gameActivity extends ActionBarActivity {
                 // only shoot goomba's when user has bullets
                 if (game.getNumberOfBullets() > 0) {
 
-                    // add a new TextView to show the value of the shot goomba
-                    TextView showValue = new TextView(getBaseContext());
+                    // add a new show value to show the value of the shot goomba
+                    ShowValue showV = new ShowValue(getBaseContext(), x, y);
 
-                    // set parameters for the value of the shot goomba
-                    final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                            RelativeLayout.LayoutParams.WRAP_CONTENT,
-                            RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    int correction = (int) (0.5 * goomba.getHeight());
-                    params.setMargins(x + correction , y , 0, 0);
-                    showValue.setLayoutParams(params);
-                    showValue.setTextSize(30);
-                    showValue.setTextColor(Color.parseColor("#FF0000"));
-                    showValue.setText(String.valueOf(goomba.getValue()));
+                    // add parameters to the show value
+                    showV.setValueParams(goomba);
+
+                    // add animation to the show value
+                    showV.valueAnimation();
 
                     // add the value of the shot goomba to the view
-                    relativeLayout.addView(showValue);
+                    relativeLayout.addView(showV);
 
-                    // make the value rise and fade out
-                    ObjectAnimator fadeOut = ObjectAnimator.ofFloat(showValue, "alpha", 1.0f, 0.0f);
-                    ObjectAnimator rise = ObjectAnimator.ofFloat(showValue, "y", y , y - 40);
-                    AnimatorSet animSet = new AnimatorSet();
-                    animSet.play(fadeOut).with(rise);
-                    animSet.setDuration(1200);
-                    animSet.start();
 
                     // function for a shot goomba
                     goomba.shot();
@@ -274,9 +271,9 @@ public class gameActivity extends ActionBarActivity {
     }
 
     /**
-     *  Asks user for input of the name to add to the High Score table
+     *  Asks user for name input to add to the High Score table.
      */
-    public void insertName() {
+    private void insertName() {
 
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -332,7 +329,7 @@ public class gameActivity extends ActionBarActivity {
     }
 
     /**
-     *  Handle touches on the screen
+     *  Handle touches on the screen.
      */
     public boolean onTouchEvent(MotionEvent event) {
         int eventaction = event.getAction();
@@ -389,10 +386,10 @@ public class gameActivity extends ActionBarActivity {
         for (int i = 0; i < numberOfBullets; i++) {
 
             // add bullets to the right bottom corner of the screen
-            bullet = new ImageView(this);
+            Bullet bullet = new Bullet(this);
 
             // set settings for the bullet
-            bullet = game.addBullet(bullet, i);
+            bullet.setBulletParameters(i);
 
             relativeLayout.addView(bullet);
         }
@@ -437,28 +434,32 @@ public class gameActivity extends ActionBarActivity {
     }
 
     /**
-     * Add reload button to the view.
+     * Add Reload button to the view.
      */
     private void addReloadButton() {
 
-        final Button reloadButton = game.setReloadButton();
+        final ReloadButton reload = new ReloadButton(this);
+
+        reload.setReloadParams();
+
+        reload.onAppearance(game);
 
         // add button to the view
-        relativeLayout.addView(reloadButton);
+        relativeLayout.addView(reload);
 
         // when the reload button is clicked, call load bullets
-        reloadButton.setOnClickListener(new View.OnClickListener() {
+        reload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 loadBullets(v);
 
-                relativeLayout.removeView(reloadButton);
+                relativeLayout.removeView(reload);
             }
         });
     }
 
     /**
-     *  Finish activity when game is send to the background
+     *  Finish activity when game is send to the background.
      */
     @Override
     protected void onStop() {

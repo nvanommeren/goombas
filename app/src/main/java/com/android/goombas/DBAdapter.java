@@ -1,3 +1,15 @@
+/***********************************************************************
+ *
+ * Shoot the Goomba's
+ * Nikki van Ommeren
+ * nikki_vanommeren@hotmail.com, 6229670
+ *
+ * Class for the Database adapter for creating/opening the
+ * the high score table, putting new values in it and finding
+ * values in the table.
+ *
+ ***********************************************************************/
+
 package com.android.goombas;
 
 import android.content.ContentValues;
@@ -6,34 +18,34 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 
 public class DBAdapter {
 
-    // define the layout of the table in fields
+    /** Define the layout of the table in fields */
     public static final String KEY_ID = "_id";
     public static final String KEY_NAME = "name";
     public static final String KEY_POINTS = "points";
 
-    // define SQLite database fields
+    /** Define SQLite database fields */
     private static final String DB_NAME = "goombas.db";
     private static final String DB_TABLE_SCORES = "highScores";
     private static final int    DB_VER = 1;
 
-    private DatabaseHelper dbHelper;
-    private SQLiteDatabase db;
-
-    // Database creation sql statement
+    /** SQL statement for creating a database */
     private static final String DATABASE_CREATE = "CREATE TABLE "
             + DB_TABLE_SCORES + " (" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_NAME + " TEXT NOT NULL, " + KEY_POINTS + " INTEGER);";
 
-    private final Context myContext;
+    private DatabaseHelper dbHelper;
+    private SQLiteDatabase db;
+    private Context myContext;
 
 
-    // define an extension of the SQLiteOpenHelper to handle the
-    // creation and upgrade of a table
+    /**
+     * Define an extension of the SQLiteOpenHelper to handle the
+     * creation and upgrade of a table.
+     */
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
         // Constructor for the DatabaseHelper
