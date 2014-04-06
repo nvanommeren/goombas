@@ -26,10 +26,13 @@ public class AssetsPropertyReader {
     public AssetsPropertyReader(Context context) {
         this.context = context;
 
-        // constructs a new property object
+        // Add a new property object
         properties = new Properties();
     }
 
+    /**
+     * Returns the properties from the file with the filename from the input.
+     */
     public Properties getProperties(String FileName) {
 
         try {

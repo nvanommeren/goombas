@@ -170,7 +170,7 @@ public class GamePlay {
     /**
      * Update the number of bullets
      */
-    public void updateBullets(ImageView target) {
+    public void updateBullets(Target target) {
 
         // update number of bullets
         numberOfBullets --;

@@ -5,8 +5,8 @@
  * nikki_vanommeren@hotmail.com, 6229670
  *
  * Class for the Database adapter for creating/opening the
- * the high score table, putting new values in it and finding
- * values in the table.
+ * the high score table, putting new high scores in it and finding
+ * scores in the table.
  *
  ***********************************************************************/
 
@@ -43,6 +43,14 @@ public class DBAdapter {
 
 
     /**
+     * Constructor for the DBAdapter
+     */
+    public DBAdapter(Context context)
+    {
+        this.myContext = context;
+    }
+
+    /**
      * Define an extension of the SQLiteOpenHelper to handle the
      * creation and upgrade of a table.
      */
@@ -70,14 +78,6 @@ public class DBAdapter {
     }
 
     /**
-     * Constructor for the DBAdapter
-     */
-    public DBAdapter(Context context)
-    {
-        this.myContext = context;
-    }
-
-    /**
      * Open the highScore database. If it cannot be opened, try to create a new
      * instance of the database. If it cannot be created, throw an exception
      * to signal the failure
@@ -96,7 +96,7 @@ public class DBAdapter {
 
 
     /**
-     * Return true if last played game is a high score
+     * Return true if last played game is a high score.
      */
     public boolean checkHighScore(int points) {
 
@@ -132,7 +132,7 @@ public class DBAdapter {
     }
 
     /**
-     * Find the current list of high scores
+     * Find the current list of high scores.
      */
     public Cursor findScores() {
 
@@ -150,7 +150,7 @@ public class DBAdapter {
     }
 
     /**
-     * Insert a new high score in the database
+     * Insert a new high score in the database.
      */
     public SQLiteDatabase insertScore(String name, int points) {
 
@@ -159,17 +159,24 @@ public class DBAdapter {
         vals.put(KEY_NAME, name);
         vals.put(KEY_POINTS, points);
 
+        // Insert the values in the high score table
         db.insert(DB_TABLE_SCORES, null, vals);
 
         return db;
     }
 
+    /**
+     * Returns the name of the row selected by the cursor
+     */
     public String getName(Cursor cursor) {
 
         String foundName = cursor.getString(cursor.getColumnIndex(KEY_NAME));
         return foundName;
     }
 
+    /**
+     * Returns the points of the row selected by the cursor
+     */
     public String getPoints (Cursor cursor) {
 
         String foundPoints = cursor.getString(cursor.getColumnIndex(KEY_POINTS));

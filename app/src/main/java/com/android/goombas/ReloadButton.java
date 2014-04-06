@@ -27,21 +27,28 @@ public class ReloadButton extends Button {
 
     }
 
+    /**
+     * Play a sound and vibrate when the Reload Button appears.
+     */
     public void onAppearance(GamePlay game) {
 
-        // play a sound when there are no bullets left
+        // Play a sound when there are no bullets left
         game.playEmpty();
 
-        // vibrate for 0,5 second
+        // Vibrate for 0,5 second
         Vibrator v = (Vibrator) this.myContext.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(500);
     }
 
+    /**
+     * Sets the parameters for the location of the button, add text and enable the
+     * default sound.
+     */
     public void setReloadParams() {
 
         this.setText("Reload");
 
-        // put reload button in the bottom right of the screen
+        // Put reload button in the bottom right of the screen
         final RelativeLayout.LayoutParams reloadParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -51,10 +58,10 @@ public class ReloadButton extends Button {
 
         this.setLayoutParams(reloadParams);
 
-        // make the reloadbutton green
+        // Make the reloadbutton green
         this.setBackgroundResource(R.drawable.rounded_button);
 
-        // enable the default sound of the button
+        // Enable the default sound of the button
         this.setSoundEffectsEnabled(false);
 
     }

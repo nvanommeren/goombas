@@ -19,7 +19,10 @@ import android.widget.TextView;
 
 public class ShowValue extends TextView {
 
+    /** X-coordinate of the Show Value */
     protected int x;
+
+    /** Y-coordinate of the Show Value */
     protected int y;
 
     protected ShowValue(Context context, int x, int y) {
@@ -30,28 +33,40 @@ public class ShowValue extends TextView {
 
     }
 
-
+    /**
+     * Sets the parameters for the location of the Show Value and adds the value,
+     * depending on the value of the shot Goomba.
+     */
     public void setValueParams(Goomba goomba) {
 
-        // set parameters for the value of the shot goomba
+        // Sets parameters for the location of the Show Value
         final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         int correction = (int) (0.5 * goomba.getHeight());
         params.setMargins(x + correction , y , 0, 0);
         this.setLayoutParams(params);
+
+        // Sets the text size and text color
         this.setTextSize(30);
         this.setTextColor(Color.parseColor("#FF0000"));
+
+        // Adds the value of the shot Goomba
         this.setText(String.valueOf(goomba.getValue()));
     }
 
+    /**
+     * Adds an animation to the show value.
+     */
     public void valueAnimation() {
 
-        // make the value rise and fade out
+        // Make the ShowValue rise and fade out
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, "alpha", 1.0f, 0.0f);
         ObjectAnimator rise = ObjectAnimator.ofFloat(this, "y", y , y - 40);
         AnimatorSet animSet = new AnimatorSet();
         animSet.play(fadeOut).with(rise);
+
+        // Sets the duration and starts the animation
         animSet.setDuration(1200);
         animSet.start();
     }

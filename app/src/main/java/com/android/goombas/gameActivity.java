@@ -37,17 +37,13 @@ public class gameActivity extends ActionBarActivity {
 
     private SharedPreferences prefs;
 
-    private ImageView target;
-
     private RelativeLayout relativeLayout;
-
-    private RelativeLayout.LayoutParams targetParams;
-
-    private int targetSize;
 
     private CountDownTimer timer;
 
     private GamePlay game;
+
+    private Target target;
 
     /** Class used to handle all database actions */
     private DBAdapter db;
@@ -81,15 +77,11 @@ public class gameActivity extends ActionBarActivity {
         // load the music button
         loadMusicButton();
 
-        // add target to the view
-        target = new ImageView(this);
         relativeLayout = (RelativeLayout)findViewById(R.id.layout1);
-        targetSize = 80;
 
-        // set parameters for the target and make sure the target starts outside the view
-        targetParams = new RelativeLayout.LayoutParams(targetSize, targetSize);
-        targetParams.setMargins(-100, -100, 0, 0);
-        target.setLayoutParams(targetParams);
+        // add target to the view
+        target = new Target(this);
+        target.setTargetParams(-100, -100);
         relativeLayout.addView(target);
 
         // add bullets to the view
@@ -218,8 +210,7 @@ public class gameActivity extends ActionBarActivity {
                 relativeLayout.removeView(target);
 
                 // set target to the coordinates of the shot goomba
-                targetParams.setMargins(x ,y , 0, 0);
-                target.setLayoutParams(targetParams);
+                target.setTargetParams(x, y);
 
                 // add target to the view
                 relativeLayout.addView(target);
@@ -345,11 +336,10 @@ public class gameActivity extends ActionBarActivity {
                 int y = (int)event.getY();
 
                 // correct so the target is in the middle of the touch
-                int correction = (int) (0.5 * targetSize);
+                int correction = (int) (0.5 * target.getSize());
 
                 // set target to the coordinates of the touch
-                targetParams.setMargins(x - correction,y - correction, 0, 0);
-                target.setLayoutParams(targetParams);
+                target.setTargetParams(x - correction, y - correction);
 
                 // add target to the view
                 relativeLayout.addView(target);
