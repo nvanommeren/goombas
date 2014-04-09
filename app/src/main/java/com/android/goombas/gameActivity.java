@@ -41,6 +41,8 @@ public class gameActivity extends ActionBarActivity {
 
     private CountDownTimer timer;
 
+    private long milliSecondsLeft;
+
     private GamePlay game;
 
     private Target target;
@@ -68,11 +70,11 @@ public class gameActivity extends ActionBarActivity {
         // get Shared Preferences object
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        // set a count down timer
-        setTimer();
-
         // start a new gamePlay
         game = new GamePlay(this, prefs);
+
+        // set a count down timer
+        setTimer(game.getGameTime());
 
         // load the music button
         loadMusicButton();
@@ -124,13 +126,16 @@ public class gameActivity extends ActionBarActivity {
      * Sets a timer which counts down from 60 seconds and calls the addGoomba function every
      * second. Finishes the game when the time is up.
      */
-    private void setTimer() {
+    private void setTimer(long millisFromStart) {
 
         // add a timer in the textView in the top right corner
         final TextView textView = (TextView) findViewById(R.id.textView);
 
         // count down from 60 seconds
-        new CountDownTimer(60000, 1000) {
+        timer = new CountDownTimer(millisFromStart, 1000) {
+
+            // indices for the random numbers
+            int index, index2;
 
             public void onTick(long millisUntilFinished) {
                 textView.setText(String.valueOf(millisUntilFinished / 1000));
@@ -139,14 +144,26 @@ public class gameActivity extends ActionBarActivity {
                 if ((millisUntilFinished/1000) % 1 == 0) {
 
                     // random number between 1 and 3
-                    int index = new Random().nextInt(3) + 1;
+                    index = new Random().nextInt(3) + 1;
 
                     // add between 1 and 3 goomba's at the same time
                     for (int i = 0; i < index; i++ ) {
                         addGoomba();
 
                     }
+
+                    // Save the number of seconds left in a variable
+                    milliSecondsLeft = millisUntilFinished;
+
+                    // random number between 0 and 24
+                    index2 = new Random().nextInt(25);
+
+                    // add a extra time clock when the random number is 0
+                    if (index2 == 0) {
+                        addClock();
+                    }
                 }
+
             }
 
             // when the time is up
@@ -221,8 +238,11 @@ public class gameActivity extends ActionBarActivity {
                     // add a new show value to show the value of the shot goomba
                     ShowValue showV = new ShowValue(getBaseContext(), x, y);
 
+                    int size = goomba.getHeight();
+                    String value = String.valueOf(goomba.getValue());
+
                     // add parameters to the show value
-                    showV.setValueParams(goomba);
+                    showV.setValueParams(size, value);
 
                     // add animation to the show value
                     showV.valueAnimation();
@@ -259,6 +279,54 @@ public class gameActivity extends ActionBarActivity {
             }
         });
 
+    }
+
+    /**
+     * Adds a new extraTimeClock to the view, when the user clicks it, the user
+     * gets 5 extra seconds play time.
+     */
+    private void addClock() {
+
+        // Add an clock to the view
+        final ExtraTimeClock clock = new ExtraTimeClock(getBaseContext());
+        relativeLayout.addView(clock);
+
+        // Set the animation for the clock
+        clock.setAnimation();
+
+        clock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // remove the clock from the view
+                relativeLayout.removeView(clock);
+
+                // stop the old timer
+                timer.cancel();
+
+                // set a new timer with current time plus 5 seconds
+                setTimer(milliSecondsLeft + 5000);
+
+                // get coordinates of the clicked clock
+                int x = Math.round(clock.getX());
+                int y = Math.round(clock.getY());
+
+                // add a new show value to show the value of the clicked clock
+                ShowValue showV = new ShowValue(getBaseContext(), x, y);
+
+                // set parameters of the show value
+                showV.setValueParams(80, "5 sec!");
+
+                // set target to the coordinates of the clicked clock
+                target.setTargetParams(x, y);
+
+                // add animation to the show value
+                showV.valueAnimation();
+
+                // add the value of the shot goomba to the view
+                relativeLayout.addView(showV);
+            }
+        });
     }
 
     /**

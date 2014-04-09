@@ -4,7 +4,8 @@
  * Nikki van Ommeren
  * nikki_vanommeren@hotmail.com, 6229670
  *
- * Class for the value shown when you hit a Goomba.
+ * Class for the value shown when you hit a Goomba or click an extra time
+ * clock.
  *
  ***********************************************************************/
 
@@ -35,24 +36,24 @@ public class ShowValue extends TextView {
 
     /**
      * Sets the parameters for the location of the Show Value and adds the value,
-     * depending on the value of the shot Goomba.
+     * depending on the value of the clicked object.
      */
-    public void setValueParams(Goomba goomba) {
+    public void setValueParams(int size, String value) {
 
         // Sets parameters for the location of the Show Value
         final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
-        int correction = (int) (0.5 * goomba.getHeight());
+        int correction = (int) (0.5 * size);
         params.setMargins(x + correction , y , 0, 0);
         this.setLayoutParams(params);
 
         // Sets the text size and text color
-        this.setTextSize(30);
+        this.setTextSize(25);
         this.setTextColor(Color.parseColor("#FF0000"));
 
         // Adds the value of the shot Goomba
-        this.setText(String.valueOf(goomba.getValue()));
+        this.setText(value);
     }
 
     /**

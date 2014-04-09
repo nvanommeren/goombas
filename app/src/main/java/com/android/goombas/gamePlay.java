@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.widget.Button;
-import android.widget.ImageView;
 
 import java.util.Properties;
 
@@ -27,6 +26,7 @@ public class GamePlay {
 
     private int points;
     private int numberOfBullets;
+    private int gameTime;
     private boolean music;
 
     /** MediaPlayers for the sounds */
@@ -54,6 +54,8 @@ public class GamePlay {
         // set number of bullets as defined in the config file
         this.numberOfBullets = Integer.parseInt(prop.getProperty("numberOfBullets"));
 
+        this.gameTime = Integer.parseInt(prop.getProperty("gameTime"));
+
         // Get the value of music, music on (true) by default
         this.music = prefs.getBoolean("music", true);
 
@@ -67,7 +69,7 @@ public class GamePlay {
         mpEmpty = MediaPlayer.create(myContext, R.raw.gun_empty);
 
         // create a background sound and start it
-        mpBackground = MediaPlayer.create(myContext, R.raw.super_mario_bros);
+        mpBackground = MediaPlayer.create(myContext, R.raw.super_mario_bros_extended);
         mpBackground.setVolume(0.0f, 0.8f);
         mpBackground.start();
 
@@ -190,6 +192,10 @@ public class GamePlay {
 
     public int getPoints() {
         return points;
+    }
+
+    public int getGameTime() {
+        return gameTime;
     }
 
 }

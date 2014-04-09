@@ -67,7 +67,6 @@ public class Goomba extends ImageButton {
         display.getSize(screenSize);
         screenY = screenSize.y;
         screenX = screenSize.x;
-        // int width = display.getWidth();  // ?for API levels below 14
 
         // Get file with the configuration properties
         AssetsPropertyReader assetsPropertyReader = new AssetsPropertyReader(context);
@@ -100,7 +99,7 @@ public class Goomba extends ImageButton {
      */
     private void setY(View goomba) {
 
-        // Add parameters for the starting height to the Goomba
+        // Add parameters for the size and starting height to the Goomba
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(size, size);
         params.setMargins(0, y, 0, 0); // left,top,right,bottom
         goomba.setLayoutParams(params);

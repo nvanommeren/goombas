@@ -12,6 +12,7 @@
 package com.android.goombas;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Vibrator;
 import android.widget.Button;
 import android.widget.RelativeLayout;
@@ -60,6 +61,9 @@ public class ReloadButton extends Button {
 
         // Make the reloadbutton green
         this.setBackgroundResource(R.drawable.rounded_button);
+
+        // Set the color of the text on the button to white
+        this.setTextColor(Color.parseColor("#FFFFFF"));
 
         // Enable the default sound of the button
         this.setSoundEffectsEnabled(false);
